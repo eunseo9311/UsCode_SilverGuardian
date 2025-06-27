@@ -17,7 +17,7 @@ RUN pip install uv && uv pip sync pyproject.toml --system
 COPY . .
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8000
 
 # Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"] 
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"] 
