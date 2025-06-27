@@ -5,7 +5,7 @@ import { QRCode } from '@/components/QRCode'
 
 export default function HomePage() {
   return (
-    <Center h="100vh">
+    <Center h="100dvh">
       <VStack alignItems="center" mx="auto" transform="translateY(-80px)">
         <MotionBox
           animate={{
