@@ -50,12 +50,7 @@ class Patrol(Base):
     active: Mapped[bool] = mapped_column(Boolean)
 
     def __repr__(self) -> str:
-<<<<<<< HEAD
         return f"Patrol(start_lat={self.start_lat!r}, start_lon={self.start_lon!r}, end_lat={self.end_lat!r}, end_lon={self.end_lon!r}, start_time={self.start_time!r}, end_time={self.end_time!r}, memo={self.memo!r}, is_active={self.is_active!r})"
-
-=======
-        return f"Patrol(user_id={self.user_id!r}, user_name={self.user_name!r}, start_lat={self.start_lat!r}, start_lon={self.start_lon!r}, end_lat={self.end_lat!r}, end_lon={self.end_lon!r}, start_time={self.start_time!r}, end_time={self.end_time!r}, memo={self.memo!r}, is_active={self.is_active!r})"
->>>>>>> 629f63ffee469f13c7555c0c2ca131bf53b1a30b
 
 User.metadata.create_all(engine)
 Patrol.metadata.create_all(engine)
