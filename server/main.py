@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
+from pydantic.config import ConfigDict
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import select
 
@@ -25,6 +26,8 @@ app = FastAPI()
 
 
 class UserSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     name: str
     lat: float  # 위도
@@ -32,6 +35,8 @@ class UserSchema(BaseModel):
 
 
 class PatrolSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: str
     user_name: str
@@ -74,14 +79,14 @@ def create_user_qr(
 
 
 # 유저 조회 Read
-@app.get("/users", response_model=List[UserSchema])
-def read_users(db: Session = Depends(get_db)) -> List[UserSchema]:
+@app.get("/users")
+def read_users(db: Session = Depends(get_db)) -> list[UserSchema]:
     users = db.execute(select(User)).scalars().all()  # 모든 유저 조회
     return [UserSchema.model_validate(user) for user in users]
 
 
 # 특정 유저 조회 Read
-@app.get("/users/{user_id}", response_model=UserSchema)
+@app.get("/users/{user_id}")
 def read_user(user_id: str, db: Session = Depends(get_db)) -> UserSchema:
     user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
     if not user:
@@ -90,7 +95,7 @@ def read_user(user_id: str, db: Session = Depends(get_db)) -> UserSchema:
 
 
 # 유저 수정 Update
-@app.put("/users/{user_id}", response_model=UserSchema)
+@app.put("/users/{user_id}")
 def update_user(
     user_id: str, user: UserSchema, db: Session = Depends(get_db)
 ) -> UserSchema:
@@ -119,7 +124,7 @@ def delete_user(user_id: str, db: Session = Depends(get_db)) -> UserSchema:
 
 
 # 순찰 생성 Create
-@app.post("/patrols/start", response_model=PatrolSchema)
+@app.post("/patrols/start")
 def start_patrol(
     patrol_data: PatrolSchema, db: Session = Depends(get_db)
 ) -> PatrolSchema:
@@ -155,14 +160,14 @@ def start_patrol(
 
 
 # 순찰 조회 Read
-@app.get("/patrols", response_model=list[PatrolSchema])
+@app.get("/patrols")
 def read_patrols(db: Session = Depends(get_db)) -> list[PatrolSchema]:
     patrols = db.execute(select(Patrol)).scalars().all()
     return [PatrolSchema.model_validate(patrol) for patrol in patrols]
 
 
 # 순찰 중 유저 목록
-@app.get("/patrols/active", response_model=list[PatrolSchema])
+@app.get("/patrols/active")
 def get_active_patrols(db: Session = Depends(get_db)) -> list[PatrolSchema]:
     active_patrols = (
         db.execute(select(Patrol).where(Patrol.active.is_(True))).scalars().all()
@@ -171,7 +176,7 @@ def get_active_patrols(db: Session = Depends(get_db)) -> list[PatrolSchema]:
 
 
 # 특정 순찰 조회 Read
-@app.get("/patrols/{patrol_id}", response_model=PatrolSchema)
+@app.get("/patrols/{patrol_id}")
 def read_patrol(patrol_id: int, db: Session = Depends(get_db)) -> PatrolSchema:
     patrol = db.execute(
         select(Patrol).where(Patrol.id == patrol_id)
@@ -182,7 +187,7 @@ def read_patrol(patrol_id: int, db: Session = Depends(get_db)) -> PatrolSchema:
 
 
 # 순찰 종료 Update
-@app.put("/patrols/{patrol_id}/end", response_model=PatrolSchema)
+@app.put("/patrols/{patrol_id}/end")
 def end_patrol(
     patrol_id: int, end_lat: float, end_lon: float, db: Session = Depends(get_db)
 ) -> PatrolSchema:
@@ -203,7 +208,7 @@ def end_patrol(
 
 
 # 순찰 메모 업데이트 Update
-@app.put("/patrols/{patrol_id}/memo", response_model=PatrolSchema)
+@app.put("/patrols/{patrol_id}/memo")
 def update_patrol_memo(
     patrol_id: int, memo: str, db: Session = Depends(get_db)
 ) -> PatrolSchema:
@@ -220,7 +225,7 @@ def update_patrol_memo(
 
 
 # 특정 유저 순찰 메모 조회 Read
-@app.get("/patrols/user/{user_id}/memo", response_model=PatrolSchema)
+@app.get("/patrols/user/{user_id}/memo")
 def get_user_patrol_memo(user_id: str, db: Session = Depends(get_db)) -> PatrolSchema:
     patrol = db.execute(
         select(Patrol).where(Patrol.user_id == user_id)
@@ -241,4 +246,5 @@ def delete_patrol(patrol_id: int, db: Session = Depends(get_db)) -> PatrolSchema
 
     db.delete(patrol)
     db.commit()
+    db.refresh(patrol)
     return PatrolSchema.model_validate(patrol)
