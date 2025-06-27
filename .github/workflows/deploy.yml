@@ -52,7 +52,9 @@ jobs:
           --port 8000 \
           --memory 512Mi \
           --cpu 1 \
-          --max-instances 1
+          --max-instances 1 \
+          --timeout 300 \
+          --concurrency 1
           
     - name: Show service URL
       run: |

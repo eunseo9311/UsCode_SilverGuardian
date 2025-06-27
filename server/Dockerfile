@@ -11,13 +11,16 @@ RUN apt-get update && apt-get install -y \
 COPY pyproject.toml uv.lock ./
 
 # Install Python dependencies
-RUN pip install uv && uv pip sync pyproject.toml --system
+RUN pip install uv && uv sync --system
 
 # Copy application code
 COPY . .
 
 # Expose port
 EXPOSE 8000
+
+# Set environment variable for Cloud Run
+ENV PORT=8000
 
 # Run the application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"] 
