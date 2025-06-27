@@ -51,7 +51,7 @@ export default function Page() {
         </VStack>
         <VStack gap="10px">
           <Flex alignItems="center" gap="6px">
-            <Image boxSize="24px" h="24px" src="mingcute:fire-fill" />
+            <Image alt="산불 아이콘" boxSize="24px" src="/fire.svg" />
             <Text
               color="#000"
               fontFamily="Pretendard"
