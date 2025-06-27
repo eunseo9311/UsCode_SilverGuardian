@@ -1,7 +1,8 @@
-import { Center, Image, Text, VStack } from '@devup-ui/react'
+import { Center, css, Image, Text, VStack } from '@devup-ui/react'
 
 import { MotionBox } from '@/components/motion'
 import { QRCode } from '@/components/QRCode'
+import { StartButton } from '@/components/StartButton'
 
 export default function HomePage() {
   return (
@@ -21,6 +22,7 @@ export default function HomePage() {
         >
           <Image boxSize="180px" src="logo.svg" />
         </MotionBox>
+
         <MotionBox
           animate={{
             scale: [0, 1.1, 1],
@@ -38,6 +40,7 @@ export default function HomePage() {
             <QRCode />
           </Center>
         </MotionBox>
+
         <MotionBox
           animate={{
             scale: 0.8,
@@ -63,11 +66,30 @@ export default function HomePage() {
               lineHeight="1.3em"
               textAlign="center"
             >
-              SIVER
+              SILVER
               <br />
               GUARDIAN
             </Text>
           </Center>
+        </MotionBox>
+
+        {/* ✅ "시작하기" 버튼 */}
+        <MotionBox
+          animate={{
+            opacity: 1,
+            y: 120,
+          }}
+          className={css({ w: '100%' })}
+          initial={{
+            opacity: 0,
+            y: 140,
+          }}
+          transition={{
+            delay: 0.6,
+            ease: 'easeInOut',
+          }}
+        >
+          <StartButton />
         </MotionBox>
       </VStack>
     </Center>
