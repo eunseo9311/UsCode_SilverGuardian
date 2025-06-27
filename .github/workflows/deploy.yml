@@ -13,6 +13,9 @@ env:
   SERVICE_NAME: uscode-silverguardian-api
   REGION: asia-northeast3
 
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
