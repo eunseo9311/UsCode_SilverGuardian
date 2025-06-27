@@ -9,22 +9,23 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@devup-ui/react": "^1",
+    "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.4",
-    "@devup-ui/react": "^1",
-    "sanitize.css": "^13.0.0"
+    "sanitize.css": "^13.0.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@devup-ui/next-plugin": "1.0.4",
-    "eslint-plugin-devup": "^2.0.5",
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tauri-apps/cli": "^2.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
-    "@eslint/eslintrc": "^3",
-    "@tauri-apps/cli": "^2.6.1"
+    "eslint-plugin-devup": "^2.0.5",
+    "typescript": "^5"
   }
 }
