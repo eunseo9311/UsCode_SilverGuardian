@@ -12,7 +12,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "next": "15.3.4",
-    "@devup-ui/react": "^1"
+    "@devup-ui/react": "^1",
+    "sanitize.css": "^13.0.0"
   },
   "devDependencies": {
     "@devup-ui/next-plugin": "1.0.4",

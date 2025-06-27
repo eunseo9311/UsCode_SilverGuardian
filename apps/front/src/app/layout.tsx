@@ -1,3 +1,6 @@
+import 'sanitize.css'
+
+import { Box } from '@devup-ui/react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -11,8 +14,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="ko">
+      <head>
+        <link
+          as="style"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+          rel="stylesheet"
+        />
+      </head>
+      <Box as="body" bg="#F7F7F7">
+        {children}
+      </Box>
     </html>
   )
 }
