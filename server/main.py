@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from datetime import datetime

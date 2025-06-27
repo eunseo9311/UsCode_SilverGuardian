@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Integer, String
 
 # 환경 변수에서 데이터베이스 URL 가져오기
-DATABASE_URL = os.getenv("DB_URL") or "postgresql+psycopg2://postgres:postgres@104.198.147.59:5432/postgres"
+DATABASE_URL = os.getenv("DB_URL") or ""
 engine = create_engine(DATABASE_URL, echo=True)
 
 Base = declarative_base()
