@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
@@ -6,10 +7,11 @@ from typing import Optional
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import select
 
-from db import User, Patrol, Base, engine
+from db import User, Patrol, engine
 from sqlalchemy.orm import sessionmaker
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 def get_db():
     db = SessionLocal()
@@ -19,28 +21,29 @@ def get_db():
         db.close()
 
 
-        
-
 app = FastAPI()
 
+
 class UserSchema(BaseModel):
-    id: int
+    id: str
     name: str
     lat: float  # 위도
     lon: float  # 경도
 
-# class Patrol(BaseModel):
-#     id: int
-#     user_id: int
-#     user_name: str
-#     start_lat: float  # 순찰 시작 위도
-#     start_lon: float  # 순찰 시작 경도
-#     end_lat: Optional[float] = None  # 순찰 종료 위도
-#     end_lon: Optional[float] = None  # 순찰 종료 경도
-#     start_time: datetime  # 순찰 시작 시간
-#     end_time: Optional[datetime] = None  # 순찰 종료 시간
-#     memo: Optional[str] = None  # 메모
-#     is_active: bool = True  # 순찰 중인지 여부
+
+class PatrolSchema(BaseModel):
+    id: int
+    user_id: str
+    user_name: str
+    start_lat: float  # 순찰 시작 위도
+    start_lon: float  # 순찰 시작 경도
+    end_lat: Optional[float] = None  # 순찰 종료 위도
+    end_lon: Optional[float] = None  # 순찰 종료 경도
+    start_time: datetime  # 순찰 시작 시간
+    end_time: Optional[datetime] = None  # 순찰 종료 시간
+    memo: Optional[str] = None  # 메모
+    active: bool = True  # 순찰 중인지 여부
+
 
 users = {}
 patrols = {}  # 순찰 데이터 저장
@@ -48,129 +51,194 @@ patrol_counter = 1  # 순찰 ID 자동 생성용
 
 
 @app.get("/")
-def read_root():
+def read_root() -> dict:
     return {"message": "Hello from uscode-silverguardian!"}
 
-# @app.post("/users")
-# def create_user(user: User):
-#     if user.id in users:
-#         return {"error": "User already exists"}
-#     users[user.id] = user
-#     return user
 
-# @app.get("/users")
-# def read_users():
-#     return list(users.values())
+# User CRUD 기능
 
+
+# 유저 생성 Create
 @app.get("/users/qr/{uuid}")
-def create_user_qr(uuid: str, lat: float, lon: float, db: Session = Depends(get_db))-> UserSchema:
+def create_user_qr(
+    uuid: str, lat: float, lon: float, db: Session = Depends(get_db)
+) -> UserSchema:
     user = db.execute(select(User).where(User.id == uuid)).scalar_one_or_none()
     if user:
-        raise HTTPException(status_code=404, detail="User already exists")
+        raise HTTPException(status_code=400, detail="User already exists")
     user = User(id=uuid, name="정해지지 않음", lat=lat, lon=lon)
     db.add(user)
     db.commit()
-    return user
+    db.refresh(user)
+    return UserSchema.model_validate(user)
 
-# @app.get("/users/{user_id}")
-# def read_user(user_id: int):
-#     if user_id not in users:
-#         return {"error": "User not found"}
-#     return users[user_id]
 
-# @app.put("/users/{user_id}")
-# def update_user(user_id: int, user: User):
-#     if user_id not in users:
-#         return {"error": "User not found"}
-#     users[user_id] = user
-#     return user
+# 유저 조회 Read
+@app.get("/users", response_model=List[UserSchema])
+def read_users(db: Session = Depends(get_db)) -> List[UserSchema]:
+    users = db.execute(select(User)).scalars().all()  # 모든 유저 조회
+    return [UserSchema.model_validate(user) for user in users]
 
-# @app.delete("/users/{user_id}")
-# def delete_user(user_id: int):
-#     if user_id not in users:
-#         return {"error": "User not found"}
-#     del users[user_id]
-#     return {"result": "User deleted"}
 
-# # 순찰 관련 API들
-# @app.post("/patrols/start", response_model=Patrol, response_model_exclude_none=True)
-# def start_patrol(patrol_data: Patrol):
-#     """순찰 시작"""
-#     global patrol_counter
-    
-#     user_id = patrol_data.user_id
-#     start_lat = patrol_data.start_lat
-#     start_lon = patrol_data.start_lon
-#     user = users[user_id]
-    
-#     # 이미 순찰 중인지 확인
-#     for patrol in patrols.values():
-#         if patrol.user_id == user_id and patrol.is_active:
-#             return {"error": "User is already on patrol"}
-    
-#     patrol = Patrol(
-#         id=patrol_counter,
-#         user_id=user_id,
-#         user_name=user.name,
-#         start_lat=start_lat,
-#         start_lon=start_lon,
-#         start_time=datetime.now(),
-#         is_active=True
-#     )
-    
-#     patrols[patrol_counter] = patrol
-#     patrol_counter += 1
-    
-#     return patrol
+# 특정 유저 조회 Read
+@app.get("/users/{user_id}", response_model=UserSchema)
+def read_user(user_id: str, db: Session = Depends(get_db)) -> UserSchema:
+    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return UserSchema.model_validate(user)
 
-# @app.get("/patrols/active")
-# def get_active_patrols():
-#     """순찰 중인 유저들 목록"""
-#     active_patrols = [patrol for patrol in patrols.values() if patrol.is_active]
-#     return active_patrols
 
-# @app.get("/patrols")
-# def get_all_patrols():
-#     """모든 순찰 기록"""
-#     return list(patrols.values())
+# 유저 수정 Update
+@app.put("/users/{user_id}", response_model=UserSchema)
+def update_user(
+    user_id: str, user: UserSchema, db: Session = Depends(get_db)
+) -> UserSchema:
+    db_user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    for field, value in user.model_dump().items():
+        setattr(db_user, field, value)
+    db.commit()
+    db.refresh(db_user)
+    return UserSchema.model_validate(db_user)
 
-# @app.get("/patrols/{patrol_id}")
-# def get_patrol(patrol_id: int):
-#     """특정 순찰 기록 조회"""
-#     if patrol_id not in patrols:
-#         return {"error": "Patrol not found"}
-#     return patrols[patrol_id]
 
-# @app.put("/patrols/{patrol_id}/end")
-# def end_patrol(patrol_id: int, end_data: dict):
-#     """순찰 종료"""
-#     if patrol_id not in patrols:
-#         return {"error": "Patrol not found"}
-    
-#     patrol = patrols[patrol_id]
-#     if not patrol.is_active:
-#         return {"error": "Patrol already ended"}
-    
-#     patrol.end_lat = end_data.get("end_lat")
-#     patrol.end_lon = end_data.get("end_lon")
-#     patrol.end_time = datetime.now()
-#     patrol.is_active = False
-    
-#     return patrol
+# 유저 삭제 Delete
+@app.delete("/users/{user_id}")
+def delete_user(user_id: str, db: Session = Depends(get_db)) -> UserSchema:
+    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return UserSchema.model_validate(user)
 
-# @app.put("/patrols/{patrol_id}/memo")
-# def update_patrol_memo(patrol_id: int, memo_data: dict):
-#     """순찰 메모 업데이트"""
-#     if patrol_id not in patrols:
-#         return {"error": "Patrol not found"}
-    
-#     patrol = patrols[patrol_id]
-#     patrol.memo = memo_data.get("memo")
-    
-#     return patrol
 
-# @app.get("/patrols/user/{user_id}")
-# def get_user_patrols(user_id: int):
-#     """특정 유저의 순찰 기록"""
-#     user_patrols = [patrol for patrol in patrols.values() if patrol.user_id == user_id]
-#     return user_patrols
+# Patrol CRUD 기능
+
+
+# 순찰 생성 Create
+@app.post("/patrols/start", response_model=PatrolSchema)
+def start_patrol(
+    patrol_data: PatrolSchema, db: Session = Depends(get_db)
+) -> PatrolSchema:
+    # 유저 존재 확인
+    user = db.execute(
+        select(User).where(User.id == patrol_data.user_id)
+    ).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 유저 순찰 중 확인
+    active_patrol = db.execute(
+        select(Patrol).where(
+            Patrol.user_id == patrol_data.user_id, Patrol.active.is_(True)
+        )
+    ).scalar_one_or_none()
+    if active_patrol:
+        raise HTTPException(status_code=400, detail="User is already on patrol")
+
+    patrol = Patrol(
+        user_id=patrol_data.user_id,
+        user_name=user.name,  # Get user name from database
+        start_lat=patrol_data.start_lat,
+        start_lon=patrol_data.start_lon,
+        start_time=datetime.now(),
+        active=True,
+    )
+
+    db.add(patrol)
+    db.commit()
+    db.refresh(patrol)
+    return PatrolSchema.model_validate(patrol)
+
+
+# 순찰 조회 Read
+@app.get("/patrols", response_model=list[PatrolSchema])
+def read_patrols(db: Session = Depends(get_db)) -> list[PatrolSchema]:
+    patrols = db.execute(select(Patrol)).scalars().all()
+    return [PatrolSchema.model_validate(patrol) for patrol in patrols]
+
+
+# 순찰 중 유저 목록
+@app.get("/patrols/active", response_model=list[PatrolSchema])
+def get_active_patrols(db: Session = Depends(get_db)) -> list[PatrolSchema]:
+    active_patrols = (
+        db.execute(select(Patrol).where(Patrol.active.is_(True))).scalars().all()
+    )
+    return [PatrolSchema.model_validate(patrol) for patrol in active_patrols]
+
+
+# 특정 순찰 조회 Read
+@app.get("/patrols/{patrol_id}", response_model=PatrolSchema)
+def read_patrol(patrol_id: int, db: Session = Depends(get_db)) -> PatrolSchema:
+    patrol = db.execute(
+        select(Patrol).where(Patrol.id == patrol_id)
+    ).scalar_one_or_none()
+    if not patrol:
+        raise HTTPException(status_code=404, detail="Patrol not found")
+    return PatrolSchema.model_validate(patrol)
+
+
+# 순찰 종료 Update
+@app.put("/patrols/{patrol_id}/end", response_model=PatrolSchema)
+def end_patrol(
+    patrol_id: int, end_lat: float, end_lon: float, db: Session = Depends(get_db)
+) -> PatrolSchema:
+    patrol = db.execute(
+        select(Patrol).where(Patrol.id == patrol_id)
+    ).scalar_one_or_none()
+    if not patrol:
+        raise HTTPException(status_code=404, detail="Patrol not found")
+
+    patrol.end_lat = end_lat
+    patrol.end_lon = end_lon
+    patrol.end_time = datetime.now()
+    patrol.active = False
+
+    db.commit()
+    db.refresh(patrol)
+    return PatrolSchema.model_validate(patrol)
+
+
+# 순찰 메모 업데이트 Update
+@app.put("/patrols/{patrol_id}/memo", response_model=PatrolSchema)
+def update_patrol_memo(
+    patrol_id: int, memo: str, db: Session = Depends(get_db)
+) -> PatrolSchema:
+    patrol = db.execute(
+        select(Patrol).where(Patrol.id == patrol_id)
+    ).scalar_one_or_none()
+    if not patrol:
+        raise HTTPException(status_code=404, detail="Patrol not found")
+    patrol.memo = memo
+
+    db.commit()
+    db.refresh(patrol)
+    return PatrolSchema.model_validate(patrol)
+
+
+# 특정 유저 순찰 메모 조회 Read
+@app.get("/patrols/user/{user_id}/memo", response_model=PatrolSchema)
+def get_user_patrol_memo(user_id: str, db: Session = Depends(get_db)) -> PatrolSchema:
+    patrol = db.execute(
+        select(Patrol).where(Patrol.user_id == user_id)
+    ).scalar_one_or_none()
+    if not patrol:
+        raise HTTPException(status_code=404, detail="Patrol not found")
+    return PatrolSchema.model_validate(patrol)
+
+
+# 순찰 삭제 Delete
+@app.delete("/patrols/{patrol_id}")
+def delete_patrol(patrol_id: int, db: Session = Depends(get_db)) -> PatrolSchema:
+    patrol = db.execute(
+        select(Patrol).where(Patrol.id == patrol_id)
+    ).scalar_one_or_none()
+    if not patrol:
+        raise HTTPException(status_code=404, detail="Patrol not found")
+
+    db.delete(patrol)
+    db.commit()
+    return PatrolSchema.model_validate(patrol)
