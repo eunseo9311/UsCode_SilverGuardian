@@ -1,25 +1,14 @@
 import datetime
-<<<<<<< HEAD
-from sqlalchemy import Boolean, DateTime, Numeric, create_engine
-from sqlalchemy.orm import Mapped, mapped_column
-
-=======
 import os
-from typing import Optional
 from sqlalchemy import Boolean, DateTime, Numeric, create_engine
 from sqlalchemy.orm import Mapped, mapped_column
-
-# 환경 변수에서 데이터베이스 URL 가져오기
-DATABASE_URL = os.getenv('DB_URL')
-engine = create_engine(DATABASE_URL, echo=True)
->>>>>>> 629f63ffee469f13c7555c0c2ca131bf53b1a30b
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Integer, String
 
-engine = create_engine(
-    "postgresql+psycopg2://postgres:postgres@104.198.147.59:5432/postgres", echo=True
-)
+# 환경 변수에서 데이터베이스 URL 가져오기
+DATABASE_URL = os.getenv("DB_URL") or ""
+engine = create_engine(DATABASE_URL, echo=True)
 
 Base = declarative_base()
 
@@ -51,6 +40,7 @@ class Patrol(Base):
 
     def __repr__(self) -> str:
         return f"Patrol(start_lat={self.start_lat!r}, start_lon={self.start_lon!r}, end_lat={self.end_lat!r}, end_lon={self.end_lon!r}, start_time={self.start_time!r}, end_time={self.end_time!r}, memo={self.memo!r}, is_active={self.is_active!r})"
+
 
 User.metadata.create_all(engine)
 Patrol.metadata.create_all(engine)
