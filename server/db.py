@@ -1,7 +1,18 @@
 import datetime
+<<<<<<< HEAD
 from sqlalchemy import Boolean, DateTime, Numeric, create_engine
 from sqlalchemy.orm import Mapped, mapped_column
 
+=======
+import os
+from typing import Optional
+from sqlalchemy import Boolean, DateTime, Numeric, create_engine
+from sqlalchemy.orm import Mapped, mapped_column
+
+# 환경 변수에서 데이터베이스 URL 가져오기
+DATABASE_URL = os.getenv('DB_URL')
+engine = create_engine(DATABASE_URL, echo=True)
+>>>>>>> 629f63ffee469f13c7555c0c2ca131bf53b1a30b
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Integer, String
@@ -39,8 +50,12 @@ class Patrol(Base):
     active: Mapped[bool] = mapped_column(Boolean)
 
     def __repr__(self) -> str:
+<<<<<<< HEAD
         return f"Patrol(start_lat={self.start_lat!r}, start_lon={self.start_lon!r}, end_lat={self.end_lat!r}, end_lon={self.end_lon!r}, start_time={self.start_time!r}, end_time={self.end_time!r}, memo={self.memo!r}, is_active={self.is_active!r})"
 
+=======
+        return f"Patrol(user_id={self.user_id!r}, user_name={self.user_name!r}, start_lat={self.start_lat!r}, start_lon={self.start_lon!r}, end_lat={self.end_lat!r}, end_lon={self.end_lon!r}, start_time={self.start_time!r}, end_time={self.end_time!r}, memo={self.memo!r}, is_active={self.is_active!r})"
+>>>>>>> 629f63ffee469f13c7555c0c2ca131bf53b1a30b
 
 User.metadata.create_all(engine)
 Patrol.metadata.create_all(engine)
