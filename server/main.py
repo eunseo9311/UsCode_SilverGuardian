@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
 from pydantic.config import ConfigDict
 from sqlalchemy.orm.session import Session
@@ -43,7 +43,7 @@ class PatrolCreateSchema(BaseModel):
     name: str
     start_lat: float  # 순찰 시작 위도
     start_lon: float  # 순찰 시작 경도
-    users: List[str]  # 유저 ID 리스트
+    users: list[str]  # 유저 ID 리스트
 
 
 class PatrolSchema(BaseModel):
@@ -59,7 +59,7 @@ class PatrolSchema(BaseModel):
     end_time: Optional[datetime] = None  # 순찰 종료 시간
     memo: Optional[str] = None  # 메모
     active: bool = True  # 순찰 중인지 여부
-    users: List[PatrolUserSchema]  # 참여 유저들
+    users: list[PatrolUserSchema]  # 참여 유저들
 
 
 users = {}

@@ -61,7 +61,7 @@ class PatrolUser(Base):
         Integer, ForeignKey("patrol.id", ondelete="CASCADE")
     )
     user_id: Mapped[str] = mapped_column(
-        String(30), ForeignKey("user.id", ondelete="CASCADE")
+        String(36), ForeignKey("user.id", ondelete="CASCADE")
     )
     joined_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.now
