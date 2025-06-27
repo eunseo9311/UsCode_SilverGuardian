@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 COPY pyproject.toml uv.lock ./
 
 # Install Python dependencies
-RUN pip install uv && uv pip install -e . --system
+RUN pip install uv uvicorn && uv pip install -e . --system
 
 # Copy application code
 COPY . .
