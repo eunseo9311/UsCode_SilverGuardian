@@ -1,9 +1,9 @@
 // components/navbar.tsx
 'use client'
 
+import { Box, Center, Text, VStack } from '@devup-ui/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Box, VStack, Text, Center } from '@devup-ui/react'
 
 const navItems = [
   { label: '대시보드', path: '/dashboard' },
@@ -16,14 +16,14 @@ export default function Navbar() {
 
   return (
     <Box
-      w="250px"
-      h="100vh"
-      bg="#F0F0F0"               // 전체 바탕을 좀 밝은 그레이로
+      alignItems="center"
+      bg="#F0F0F0" // 전체 바탕을 좀 밝은 그레이로
+      boxShadow="2px 0 4px rgba(0,0,0,0.1)"
       display="flex"
       flexDirection="column"
-      alignItems="center"
+      h="100vh"
       pt="40px"
-      boxShadow="2px 0 4px rgba(0,0,0,0.1)"
+      w="250px"
     >
       {/* 로고 영역 */}
       <Center mb="60px">
@@ -32,29 +32,34 @@ export default function Navbar() {
           fontFamily="Pretendard"
           fontSize="24px"
           fontWeight="800"
-          lineHeight="1.3em"
           letterSpacing="0.2em"
+          lineHeight="1.3em"
           textAlign="center"
         >
-          SIVER<br />GUARDIAN
+          SILVER
+          <br />
+          GUARDIAN
         </Text>
       </Center>
 
       {/* 네비 메뉴 */}
-      <VStack w="100%" padding="20px">
+      <VStack padding="20px" w="100%">
         {navItems.map(({ label, path }) => {
           const isActive = pathname === path
           return (
             <Link key={path} href={path} style={{ width: '100%' }}>
               <Center
+                _hover={{
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                }}
                 as="button"
-                w="90%"
-                h="60px"
                 bg={isActive ? '#D7D7D7' : '#FFFFFF'}
-                boxShadow={isActive ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'}
                 borderRadius="8px"
-                _hover={{ cursor: 'pointer', boxShadow: '0 4px 8px rgba(0,0,0,0.15)' }}
+                boxShadow={isActive ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'}
+                h="60px"
                 transition="box-shadow 0.2s"
+                w="90%"
               >
                 <Text
                   color="#000"

@@ -1,13 +1,14 @@
 'use client'
 
-import { Button } from '@devup-ui/react'
+import { Button, Text } from '@devup-ui/react'
 import { useRouter } from 'next/navigation'
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useState } from 'react'
 
 import { setUser } from '@/constants'
 import { getUUID } from '@/utils/get-uuid'
 
 export function StartButton() {
+  const [error, setError] = useState(false)
   const router = useRouter()
   useLayoutEffect(() => {
     if (localStorage.getItem('isAuth') === 'true') {
@@ -19,14 +20,17 @@ export function StartButton() {
     fetch(
       `https://uscode-silverguardian-api-627770884882.europe-west1.run.app/users/${getUUID()}`,
     )
-      .then((e) => e.json())
+      .then((e) => {
+        if (e.status === 404) {
+          setError(true)
+          throw new Error('인증이 된 유저가 아닙니다.')
+        }
+        return e.json()
+      })
       .then((e) => {
         router.push('/home')
         localStorage.setItem('isAuth', 'true')
         setUser(e)
-      })
-      .catch(() => {
-        alert('인증이 된 유저가 아닙니다.')
       })
   }
 
@@ -45,7 +49,7 @@ export function StartButton() {
       py="16px"
       w="100%"
     >
-      시작하기
+      시작하기 {error && <Text color="red">인증이 된 유저가 아닙니다.</Text>}
     </Button>
   )
 }
