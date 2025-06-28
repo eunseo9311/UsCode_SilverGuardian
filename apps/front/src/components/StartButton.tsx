@@ -37,7 +37,7 @@ export function StartButton() {
   return (
     <Button
       _hover={{ bg: '#45A049' }}
-      bg={error ? '#FF0000' : '#4CAF50'}
+      bg="#4CAF50"
       border="none"
       borderRadius="12px"
       color="white"
