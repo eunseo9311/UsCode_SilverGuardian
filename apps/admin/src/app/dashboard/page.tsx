@@ -1,11 +1,11 @@
-'use client'
-export const runtime = 'nodejs' 
 
 import { Flex, Box } from '@devup-ui/react'
+import { Map } from '../dashboard/Map'
 
 import Navbar from '../../components/navbar'
 import Topbar from '../../components/topbar'
 import Danger from '../../components/danger'
+import { VworldTable } from './table'
 
 export default function DashboardPage() {
   return (
@@ -25,19 +25,15 @@ export default function DashboardPage() {
             px="40px"
             py="24px"
             gap="40px"
-            h="calc(100% - 116px)"
+            /*h="calc(100% - 116px)"*/
           >
             {/* 좌측: Danger 컴포넌트 (195px 너비) */}
             <Danger />
 
             {/* 우측: 지도 영역 */}
-            <Box
-              flex="1"
-              bg="#FFF"
-              borderRadius="16px"
-              // 필요에 따라 그림자, overflow 등 추가 가능
-            />
+            <Map />
           </Flex>
+          <VworldTable />
         </Box>
       </Flex>
     </Box>

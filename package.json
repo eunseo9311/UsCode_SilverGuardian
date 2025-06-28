@@ -12,6 +12,7 @@
   "packageManager": "pnpm@10.12.4",
   "dependencies": {
     "@devup-ui/react": "^1.0.4",
+    "axios": "^1.10.0",
     "motion": "^12.19.2",
     "qrcode.react": "^4.2.0"
   }

@@ -1,5 +1,7 @@
 import { Box, Center, css, Flex, Image, Text, VStack } from '@devup-ui/react'
 
+import { Map } from './Map'
+
 export default function Page() {
   return (
     <VStack gap="70px">
@@ -40,12 +42,7 @@ export default function Page() {
                 borderRadius="12px"
                 w="100%"
               />
-              <Image
-                aspectRatio="239/518"
-                bg="url(/path/to/image) lightgray 50% / cover no-repeat"
-                border="1px solid $text"
-                src="KakaoTalk_Photo_2025-06-27-19-33-38 1"
-              />
+              <Map />
             </Box>
           </Box>
         </VStack>

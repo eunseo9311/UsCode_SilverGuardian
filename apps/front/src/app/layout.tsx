@@ -2,6 +2,7 @@ import 'sanitize.css'
 
 import { Box } from '@devup-ui/react'
 import type { Metadata } from 'next'
+import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -16,6 +17,10 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
+        <Script
+          src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_API_KEY}&libraries=services,clusterer,drawing&autoload=false`}
+          strategy="beforeInteractive"
+        />
         <link
           as="style"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
