@@ -1,7 +1,3 @@
-import type { NextConfig } from "next";
+import { DevupUI } from '@devup-ui/next-plugin'
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
+export default DevupUI({})

@@ -25,13 +25,13 @@ export default function Page() {
         >
           <VStack alignItems="flex-start" gap="8px">
             <Text color="#000" fontSize="18px" fontWeight="600">
-              순찰 지역 : oo리 oo읍 15-3
+              순찰 지역 : 의성군 의성읍 태평리 15-3
             </Text>
             <Text color="#000" fontSize="18px" fontWeight="600">
               순찰 시간 : 6월 18일 15:00시
             </Text>
             <Text color="#000" fontSize="18px" fontWeight="600">
-              순찰 인원 : 김의성, 이코딩, 송개발
+              순찰 인원 : 김의성, 송개발, 이코딩
             </Text>
           </VStack>
         </Box>
@@ -60,10 +60,10 @@ export default function Page() {
         >
           <VStack alignItems="flex-start" gap="8px">
             <Text color="#000" fontSize="18px" fontWeight="600">
-              걸음 수 : 7000보
+              걸음 수 : 4600보
             </Text>
             <Text color="#000" fontSize="18px" fontWeight="600">
-              이동 거리 : 2km
+              이동 거리 : 1.5km
             </Text>
           </VStack>
         </Box>
