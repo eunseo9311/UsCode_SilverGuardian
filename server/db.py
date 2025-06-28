@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, DateTime, Numeric, create_engine, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, Float
 
 # 환경 변수에서 데이터베이스 URL 가져오기
 DATABASE_URL = (
@@ -76,6 +76,58 @@ class PatrolUser(Base):
         return f"PatrolUser(patrol_id={self.patrol_id!r}, user_id={self.user_id!r}, joined_at={self.joined_at!r}, active={self.active!r})"
 
 
+class Notice(Base):
+    __tablename__ = "notice"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(200))  # 공지 제목
+    content: Mapped[str] = mapped_column(String(1000))  # 공지 내용
+    location: Mapped[str] = mapped_column(String(200))  # 순찰 장소명
+    location_lat: Mapped[float] = mapped_column(Float)  # 장소 위도
+    location_lon: Mapped[float] = mapped_column(Float)  # 장소 경도
+    scheduled_time: Mapped[datetime.datetime] = mapped_column(DateTime)  # 예정 시간
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.now
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now
+    )
+    active: Mapped[bool] = mapped_column(Boolean, default=True)  # 활성 상태
+
+    # 관계 설정
+    assigned_users: Mapped[list["NoticeUser"]] = relationship(
+        "NoticeUser", back_populates="notice", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return f"Notice(id={self.id!r}, title={self.title!r}, location={self.location!r}, scheduled_time={self.scheduled_time!r}, active={self.active!r})"
+
+
+class NoticeUser(Base):
+    __tablename__ = "notice_user"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    notice_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("notice.id", ondelete="CASCADE")
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("user.id", ondelete="CASCADE")
+    )
+    assigned_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.now
+    )
+    confirmed: Mapped[bool] = mapped_column(Boolean, default=False)  # 유저 확인 여부
+
+    # 관계 설정
+    notice: Mapped["Notice"] = relationship("Notice", back_populates="assigned_users")
+    user: Mapped["User"] = relationship("User")
+
+    def __repr__(self) -> str:
+        return f"NoticeUser(notice_id={self.notice_id!r}, user_id={self.user_id!r}, confirmed={self.confirmed!r})"
+
+
 User.metadata.create_all(engine)
 Patrol.metadata.create_all(engine)
 PatrolUser.metadata.create_all(engine)
+Notice.metadata.create_all(engine)
+NoticeUser.metadata.create_all(engine)
