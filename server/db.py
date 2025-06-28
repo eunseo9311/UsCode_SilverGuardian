@@ -9,7 +9,9 @@ Base = declarative_base()
 from sqlalchemy import create_engine  # noqa: E402
 
 # SQLite 데이터베이스 생성
-engine = create_engine("sqlite:///./silverguardian.db", echo=True)
+engine = create_engine(
+    "postgresql+psycopg2://postgres:postgres@104.198.147.59:5432/postgres", echo=True
+)
 
 
 class User(Base):
