@@ -10,6 +10,12 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.12.4",
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.0",
+    "@capacitor/core": "^7.4.0"
+  },
   "dependencies": {
+    "@capacitor/ios": "^7.4.0",
+    "@devup-ui/react": "^1.0.4"
   }
 }
