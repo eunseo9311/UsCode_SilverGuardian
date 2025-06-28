@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Box, Flex, Text } from '@devup-ui/react'
 import Navbar from '../../components/navbar'
 import Topbar from '../../components/topbar'
+import { GuardianContent } from './GuardianContent'
 
 const sampleGuardians = Array.from({ length: 7 }).map((_, i) => ({
   id: '9f98058b-79ee-42f9-9c8a-fdcc42d90f29',
@@ -55,6 +56,7 @@ export default function GuardianPage() {
                 }}
               >
                 <tr>
+
                   {['아이디', '이름', '주소', '위도/경도', '삭제'].map((h) => (
                     <th
                       key={h}
@@ -69,57 +71,10 @@ export default function GuardianPage() {
                     </th>
                   ))}
                 </tr>
+
               </thead>
               <tbody>
-                {sampleGuardians.map((g, idx) => (
-                  <Link
-                    key={idx}
-                    href={`/guardian/IDpage?id=${encodeURIComponent(g.id)}`}
-                    style={{ display: 'table-row', textDecoration: 'none' }}
-                  >
-                    <tr
-                      style={
-                        idx < sampleGuardians.length - 1
-                          ? { borderBottom: '1px solid #DDD' }
-                          : {}
-                      }
-                    >
-                      <td style={{ padding: '12px 8px', fontSize: '14px' }}>
-                        {g.id}
-                      </td>
-                      <td style={{ padding: '12px 8px', fontSize: '14px' }}>
-                        {g.name}
-                      </td>
-                      <td style={{ padding: '12px 8px', fontSize: '14px' }}>
-                        {g.address}
-                      </td>
-                      <td style={{ padding: '12px 8px', fontSize: '14px' }}>
-                        {g.latlng}
-                      </td>
-                      <td style={{ padding: '12px 8px' }}>
-                        <button
-                          style={{
-                            padding: '6px 12px',
-                            fontSize: '14px',
-                            color: '#E65C32',
-                            border: '1px solid #E65C32',
-                            borderRadius: '4px',
-                            background: 'transparent',
-                            cursor: 'pointer',
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            // TODO: 삭제 API 호출
-                            console.log('Deleting', g.id)
-                          }}
-                        >
-                          삭제
-                        </button>
-                      </td>
-                    </tr>
-                  </Link>
-                ))}
+                <GuardianContent />
               </tbody>
             </table>
           </Box>

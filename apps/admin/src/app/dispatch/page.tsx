@@ -1,49 +1,10 @@
 // apps/admin/src/app/dispatch/page.tsx
 'use client'
-export const runtime = 'nodejs'
 
 import { Box, Flex, Text } from '@devup-ui/react'
 import Navbar from '../../components/navbar'
 import Topbar from '../../components/topbar'
-
-const sampleDispatches = [
-  {
-    id: 1,
-    location: '의성체육관',
-    users: ['이코딩'],
-    start: '05:20',
-    end: '06:30',
-    memo: '',
-    patrol: true,
-  },
-  {
-    id: 2,
-    location: '의성시청',
-    users: ['김코드', '이코딩'],
-    start: '12:00',
-    end: '12:40',
-    memo: '',
-    patrol: true,
-  },
-  {
-    id: 3,
-    location: '공원',
-    users: ['송개발', '차맥북', '김그램'],
-    start: '14:10',
-    end: '15:30',
-    memo: '',
-    patrol: false,
-  },
-  {
-    id: 4,
-    location: '보건소',
-    users: ['박깃헙', '유이썬'],
-    start: '15:40',
-    end: '16:50',
-    memo: '',
-    patrol: true,
-  },
-]
+import { PatrolContent } from './PatrolContent'
 
 export default function DispatchPage() {
   return (
@@ -76,7 +37,7 @@ export default function DispatchPage() {
                 borderCollapse: 'collapse',
                 fontFamily: 'Pretendard',
                 fontSize: '16px',
-                color: '#000',  
+                color: '#000',
               }}
             >
               <thead
@@ -109,50 +70,7 @@ export default function DispatchPage() {
                 </tr>
               </thead>
               <tbody>
-                {sampleDispatches.map((d) =>
-                  d.users.map((user, idx) => (
-                    <tr
-                      key={`${d.id}-${idx}`}
-                      style={
-                        idx < d.users.length - 1
-                          ? { borderBottom: '1px solid #DDD' }
-                          : {}
-                      }
-                    >
-                      {idx === 0 && (
-                        <td
-                          rowSpan={d.users.length}
-                          style={{ padding: '12px 8px' }}
-                        >
-                          {d.id}
-                        </td>
-                      )}
-                      {idx === 0 && (
-                        <td
-                          rowSpan={d.users.length}
-                          style={{ padding: '12px 8px' }}
-                        >
-                          {d.location}
-                        </td>
-                      )}
-                      <td style={{ padding: '12px 8px' }}>{user}</td>
-                      {idx === 0 && (
-                        <td style={{ padding: '12px 8px' }}>{d.start}</td>
-                      )}
-                      {idx === 0 && (
-                        <td style={{ padding: '12px 8px' }}>{d.end}</td>
-                      )}
-                      {idx === 0 && (
-                        <td style={{ padding: '12px 8px' }}>{d.memo}</td>
-                      )}
-                      {idx === 0 && (
-                        <td style={{ padding: '12px 8px' }}>
-                          {d.patrol ? 'true' : 'false'}
-                        </td>
-                      )}
-                    </tr>
-                  ))
-                )}
+                <PatrolContent />
               </tbody>
             </table>
           </Box>

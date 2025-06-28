@@ -1,6 +1,8 @@
 import { Box, Flex, Image, Text } from '@devup-ui/react'
 import Link from 'next/link'
 
+import { RefreshUser } from './RefreshUser'
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <Box bg="#FAFAFA" h="100dvh" pt="24px" px="26px">
@@ -22,6 +24,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </Link>
       </Flex>
       {children}
+      <RefreshUser />
     </Box>
   )
 }

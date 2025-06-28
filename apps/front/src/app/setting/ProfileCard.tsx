@@ -1,13 +1,20 @@
 'use client'
 import { Box, Button, Center, Text, VStack } from '@devup-ui/react'
 import { AnimatePresence } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { MotionBox } from '@/components/motion'
 import { QRCode } from '@/components/QRCode'
+import { GlobalUser } from '@/constants'
 
 export function ProfileCard() {
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState(GlobalUser)
+
+  useEffect(() => {
+    setUser(GlobalUser)
+  }, [])
+
   return (
     <>
       {/* 카드 컨테이너 */}
@@ -18,7 +25,7 @@ export function ProfileCard() {
         p="20px"
       >
         <VStack gap="16px">
-          <Text fontSize="16px">김의성님 안녕하세요.</Text>
+          <Text fontSize="16px">{user?.name ?? '-'}님 안녕하세요.</Text>
           <Button
             bg="#4CAF50"
             border="none"
