@@ -17,7 +17,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           lineHeight="1.3em"
           textAlign="center"
         >
-          SIVER GUARDIAN
+          SILVER GUARDIAN
         </Text>
         <Link href="/setting">
           <Image boxSize="36px" role="button" src="/setting.svg" />
