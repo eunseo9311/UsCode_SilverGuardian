@@ -55,7 +55,8 @@ jobs:
           --max-instances 1 \
           --timeout 300 \
           --concurrency 1 \
-          --set-env-vars DB_URL=${{ secrets.DB_URL }}
+          --set-env-vars DB_URL=${{ secrets.DB_URL }} \
+          --set-env-vars GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
           
     - name: Show service URL
       run: |
