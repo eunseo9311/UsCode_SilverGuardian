@@ -69,7 +69,7 @@ export default function GuardianDetailPage({
               fontFamily="Pretendard"
               fontSize="32px"
               fontWeight="600"
-              mb="26px"
+              mb="16px"
             >
               가디언 상세 관리
             </Text>
