@@ -106,20 +106,6 @@ def fire_2_data():
 def fire_3_data():
     """
         소각산불징후예보목록
-        fetch("http://forestfire.nifos.go.kr/mFfdfIdxList.action", {
-      "headers": {
-        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "accept-language": "en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,ja-JP;q=0.6,ja;q=0.5",
-        "cache-control": "max-age=0",
-        "content-type": "application/x-www-form-urlencoded",
-        "upgrade-insecure-requests": "1"
-      },
-      "referrer": "http://forestfire.nifos.go.kr/mFfdfIdxList.action",
-      "body": "sido=47&date=2025-06-28",
-      "method": "POST",
-      "mode": "cors",
-      "credentials": "include"
-    });
     """
     response = requests.post(
         "http://forestfire.nifos.go.kr/mFfdfIdxList.action",

@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Text } from '@devup-ui/react'
+import { Box, Button, Text } from '@devup-ui/react'
 import { useRouter } from 'next/navigation'
 import { useLayoutEffect, useState } from 'react'
 
@@ -33,23 +33,38 @@ export function StartButton() {
         setUser(e)
       })
   }
-
   return (
-    <Button
-      _hover={{ bg: '#45A049' }}
-      bg="#4CAF50"
-      border="none"
-      borderRadius="12px"
-      color="white"
-      cursor="pointer"
-      fontSize="18px"
-      fontWeight="600"
-      onClick={handleClick}
-      px="48px"
-      py="16px"
-      w="100%"
-    >
-      시작하기 {error && <Text color="red">인증이 된 유저가 아닙니다.</Text>}
-    </Button>
+    <Box alignItems="center" display="flex" flexDirection="column" width="100%">
+      <Button
+        _hover={{ bg: '#45A049' }}
+        bg="#4CAF50"
+        border="none"
+        borderRadius="12px"
+        color="white"
+        cursor="pointer"
+        fontSize="18px"
+        fontWeight="600"
+        maxW="400px" // 최대 너비 지정 (필요에 따라 조정)
+        mx="auto" // 가운데 정렬
+        onClick={handleClick}
+        px="24px" // 좌우 padding 조정
+        py="16px"
+        w="100%" // 부모 컨테이너에 맞춰 늘어나되, padding 덕분에 벽과 붙지 않음
+      >
+        시작하기
+      </Button>
+
+      {error && (
+        <Text
+          color="red"
+          fontSize="16px"
+          mt="8px" // 버튼과 약간 띄우기
+          textAlign="center" // 가운데 정렬
+          width="100%" // 전체 너비 사용
+        >
+          인증이 된 유저가 아닙니다.
+        </Text>
+      )}
+    </Box>
   )
 }
