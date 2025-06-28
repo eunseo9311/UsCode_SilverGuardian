@@ -19,14 +19,17 @@ export function StartButton() {
     fetch(
       `https://uscode-silverguardian-api-627770884882.europe-west1.run.app/users/${getUUID()}`,
     )
-      .then((e) => e.json())
+      .then((e) => {
+        if (e.status === 404) {
+          alert('인증이 된 유저가 아닙니다.')
+          throw new Error('인증이 된 유저가 아닙니다.')
+        }
+        return e.json()
+      })
       .then((e) => {
         router.push('/home')
         localStorage.setItem('isAuth', 'true')
         setUser(e)
-      })
-      .catch(() => {
-        alert('인증이 된 유저가 아닙니다.')
       })
   }
 
