@@ -1,3 +1,4 @@
+'use client'
 import { useEffect, useState } from "react"
 
 export function PatrolContent() {
@@ -7,7 +8,7 @@ export function PatrolContent() {
             .then(e => e.json())
             .then(e => setPatrols(e))
     }, [])
-    return patrols.map((d, idx) =>
+    return patrols.map((d) =>
         d.users.map((user: any, idx: number) => (
             <tr
                 key={`${d.id}-${idx}`}
@@ -33,7 +34,7 @@ export function PatrolContent() {
                         {d.location}
                     </td>
                 )}
-                <td style={{ padding: '12px 8px' }}>{user}</td>
+                <td style={{ padding: '12px 8px' }}>{user.user_id}</td>
                 {idx === 0 && (
                     <td style={{ padding: '12px 8px' }}>{d.start}</td>
                 )}

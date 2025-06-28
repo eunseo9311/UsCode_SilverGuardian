@@ -5,6 +5,7 @@ import { Box, Flex, Text } from '@devup-ui/react'
 import Navbar from '../../components/navbar'
 import Topbar from '../../components/topbar'
 import { PatrolContent } from './PatrolContent'
+import { CreatePatrol } from './CreatePatrol'
 
 export default function DispatchPage() {
   return (
@@ -29,6 +30,7 @@ export default function DispatchPage() {
             >
               파견 관리
             </Text>
+            <CreatePatrol />
 
             {/* 테이블 */}
             <table
@@ -50,7 +52,7 @@ export default function DispatchPage() {
                   {[
                     '아이디',
                     '파견 이름',
-                    '유저 이름',
+                    '유저 아이디',
                     '시작 시간',
                     '종료 시간',
                     '메모',
