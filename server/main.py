@@ -511,11 +511,11 @@ def get_patrol_users(
     return [PatrolUserSchema(user_id=pu.user_id) for pu in patrol_users]
 
 
-# 특정 유저의 가장 가까운 미래 순찰 조회 (공지용)
-@app.get("/patrols/user/{user_id}/next")
-def get_user_next_patrol(
+# 특정 유저의 예정된 모든 순찰 조회
+@app.get("/patrols/user/{user_id}/scheduled")
+def get_user_scheduled_patrols(
     user_id: str, db: Session = Depends(get_db)
-) -> PatrolNoticeSchema:
+) -> List[PatrolNoticeSchema]:
     # 유저 존재 확인
     user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
     if not user:
@@ -523,39 +523,50 @@ def get_user_next_patrol(
 
     current_time = datetime.now()
 
-    # 유저가 참여하는 가장 가까운 미래 순찰 조회
-    next_patrol_user = db.execute(
-        select(PatrolUser)
-        .join(Patrol)
-        .where(
-            PatrolUser.user_id == user_id,
-            Patrol.start_time > current_time,  # 미래 순찰만
-            Patrol.active,  # 활성 순찰만
-        )
-        .order_by(Patrol.start_time.asc())  # 가장 가까운 순서로 정렬
-    ).scalar_one_or_none()
-
-    if not next_patrol_user:
-        raise HTTPException(status_code=404, detail="No future patrol found for user")
-
-    patrol = next_patrol_user.patrol
-
-    # 함께 순찰하는 유저들의 이름 조회
-    patrol_users = (
+    # 유저가 참여하는 모든 미래 순찰 조회
+    scheduled_patrol_users = (
         db.execute(
-            select(PatrolUser).join(User).where(PatrolUser.patrol_id == patrol.id)
+            select(PatrolUser)
+            .join(Patrol)
+            .where(
+                PatrolUser.user_id == user_id,
+                Patrol.start_time > current_time,  # 미래 순찰만
+                Patrol.active,  # 활성 순찰만
+            )
+            .order_by(Patrol.start_time.asc())  # 시간순으로 정렬
         )
         .scalars()
         .all()
     )
 
-    user_names = [pu.user.name for pu in patrol_users]
+    if not scheduled_patrol_users:
+        return []  # 예정된 순찰이 없으면 빈 리스트 반환
 
-    return PatrolNoticeSchema(
-        id=patrol.id,
-        name=patrol.name,
-        start_lat=patrol.start_lat,
-        start_lon=patrol.start_lon,
-        start_time=patrol.start_time,
-        user_names=user_names,
-    )
+    result = []
+
+    for patrol_user in scheduled_patrol_users:
+        patrol = patrol_user.patrol
+
+        # 함께 순찰하는 유저들의 이름 조회
+        patrol_users = (
+            db.execute(
+                select(PatrolUser).join(User).where(PatrolUser.patrol_id == patrol.id)
+            )
+            .scalars()
+            .all()
+        )
+
+        user_names = [pu.user.name for pu in patrol_users]
+
+        result.append(
+            PatrolNoticeSchema(
+                id=patrol.id,
+                name=patrol.name,
+                start_lat=patrol.start_lat,
+                start_lon=patrol.start_lon,
+                start_time=patrol.start_time,
+                user_names=user_names,
+            )
+        )
+
+    return result
