@@ -154,6 +154,18 @@ def delete_user(user_id: str, db: Session = Depends(get_db)) -> UserSchema:
 
 
 # Patrol CRUD 기능
+# 순찰 시작
+@app.post("/patrols/start/{patrol_id}")
+def start_patrol_real(patrol_id: int, db: Session = Depends(get_db)) -> PatrolSchema:
+    patrol = db.execute(
+        select(Patrol).where(Patrol.id == patrol_id)
+    ).scalar_one_or_none()
+    if not patrol:
+        raise HTTPException(status_code=404, detail="Patrol not found")
+    patrol.active = True
+    db.commit()
+    db.refresh(patrol)
+    return read_patrol(patrol_id, db)
 
 
 # 순찰 생성 Create
@@ -185,7 +197,7 @@ def start_patrol(
         start_lat=patrol_data.start_lat,
         start_lon=patrol_data.start_lon,
         start_time=patrol_data.start_time or datetime.now(),
-        active=True,
+        active=False,
     )
     db.add(patrol)
     db.flush()  # ID 생성
