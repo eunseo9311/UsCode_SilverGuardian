@@ -1,13 +1,13 @@
 import requests
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
-import getpass
 from pydantic import BaseModel, Field
-from typing import Dict, List
+from typing import Dict
 import re
 import json
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+import getpass
 
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langgraph.prebuilt import create_react_agent
@@ -26,13 +26,13 @@ if "GOOGLE_API_KEY" not in os.environ:
 # Pydantic 모델 정의
 class RegionRisk(BaseModel):
     region_name: str = Field(..., description="지역명")
-    risk_level: int = Field(..., ge=1, le=5, description="산불 위험도 (1-5 등급)")
+    risk_level: int = Field(..., description="산불 위험도 (0-100 점)")
 
 
 class RegionRiskResponse(BaseModel):
-    regions: List[RegionRisk] = Field(..., description="지역별 산불 위험도 목록")
+    regions: list[RegionRisk] = Field(..., description="지역별 산불 위험도 목록")
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> dict[str, int]:
         """지역명: 위험도 형태의 딕셔너리로 변환"""
         return {region.region_name: region.risk_level for region in self.regions}
 
@@ -114,22 +114,26 @@ async def region_state():
     ]
 
     try:
-        print("flag1", os.path.join(os.path.dirname(__file__), "ai_mcp.py"))
         async with stdio_client(server_params) as (read, write):
-            print("flag2")
             async with ClientSession(read, write) as session:
-                print("flag3")
                 # Initialize the connection
                 await session.initialize()
-                print("flag4")
                 # Get tools
                 tools = await load_mcp_tools(session)
-                print("flag5")
                 # Create and run the agent
-                agent = create_react_agent("gemini-2.0-flash", tools)
-                agent_response = await agent.ainvoke(messages)
+                agent = create_react_agent(
+                    ChatGoogleGenerativeAI(
+                        model="gemini-2.0-flash",
+                        temperature=0,
+                        max_tokens=None,
+                        timeout=None,
+                        max_retries=2,
+                    ),
+                    tools,
+                )
+                agent_response = await agent.ainvoke({"messages": messages})
 
-        content = str(agent_response.content).strip()
+        content = str(agent_response["messages"][-1].content).strip()
 
         # JSON 응답 파싱 시도
         # JSON 블록 추출 (```json ... ``` 형태인 경우)
@@ -168,8 +172,7 @@ def parse_text_response(text: str) -> Dict[str, int]:
         for region, risk in matches:
             try:
                 risk_level = int(risk)
-                if 1 <= risk_level <= 5:
-                    result[region] = risk_level
+                result[region] = risk_level
             except ValueError:
                 continue
 

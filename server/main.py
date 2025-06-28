@@ -38,6 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class UserSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -84,7 +85,6 @@ def read_root() -> dict:
 @app.get("/vworld")
 async def vworld() -> dict:
     return {"message": await region_state()}
-
 
 
 # User CRUD 기능
