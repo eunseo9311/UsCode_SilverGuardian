@@ -1,8 +1,40 @@
+'use client'
 import { Box, Flex, Image, Text, VStack } from '@devup-ui/react'
+import dayjs from 'dayjs'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 import PatrolStartButton from '@/components/PatrolStartButton'
+import { getUUID } from '@/utils/get-uuid'
 
 export function PatrolPanel() {
+  const [patrolData, setPatrolData] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchPatrolData = async () => {
+      const response = await fetch(
+        `https://uscode-silverguardian-api-627770884882.europe-west1.run.app/patrols/user/${getUUID()}/scheduled`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+      const data = await response.json()
+      if (data.length && !data[0].active) {
+        setPatrolData(data[0])
+      }
+    }
+    fetchPatrolData()
+  }, [])
+
+  const router = useRouter()
+
+  if (!patrolData) return null
+
+  const disabled = dayjs(patrolData.start_time).isAfter(dayjs())
+
   return (
     <>
       <VStack alignItems="flex-start" gap="12px" w="100%">
@@ -24,18 +56,24 @@ export function PatrolPanel() {
         >
           <VStack alignItems="flex-start" gap="8px">
             <Text color="#000" fontSize="18px" fontWeight="600">
-              순찰 지역 : 의성군 의성읍 태평리 15-3
+              순찰 지역 : {patrolData.name}
             </Text>
             <Text color="#000" fontSize="18px" fontWeight="600">
-              순찰 시간 : 6월 18일 15:00시
+              순찰 시간 :{' '}
+              {dayjs(patrolData.start_time).format('YYYY-MM-DD HH:mm:ss')}
             </Text>
             <Text color="#000" fontSize="18px" fontWeight="600">
-              순찰 인원 : 김의성, 송개발, 이코딩
+              순찰 인원 : {patrolData.users.length}명
             </Text>
           </VStack>
         </Box>
       </VStack>
-      <PatrolStartButton />
+      <PatrolStartButton
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) router.push(`/patrol?patrol_id=${patrolData.id}`)
+        }}
+      />
     </>
   )
 }

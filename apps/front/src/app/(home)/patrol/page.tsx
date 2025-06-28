@@ -1,8 +1,12 @@
+'use client'
 import { Box, Center, css, Flex, Image, Text, VStack } from '@devup-ui/react'
+import { openUrl } from '@tauri-apps/plugin-opener'
+import { useRouter } from 'next/navigation'
 
 import { Map } from './Map'
 
 export default function Page() {
+  const router = useRouter()
   return (
     <VStack gap="70px">
       <VStack gap="20px">
@@ -93,6 +97,9 @@ export default function Page() {
           cursor="pointer"
           gap="10px"
           h="70px"
+          onClick={() => {
+            openUrl('tel:119')
+          }}
           px="10px"
           py="14px"
         >
@@ -115,6 +122,21 @@ export default function Page() {
           borderRadius="14px"
           gap="10px"
           h="70px"
+          onClick={() => {
+            fetch(
+              `https://uscode-silverguardian-api-627770884882.europe-west1.run.app/patrols/start/${new URL(
+                location.href,
+              ).searchParams.get('patrol_id')}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              },
+            ).then(() => {
+              router.push('/home')
+            })
+          }}
           px="10px"
           py="14px"
         >
