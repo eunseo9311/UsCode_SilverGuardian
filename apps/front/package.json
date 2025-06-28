@@ -1,6 +1,7 @@
 {
   "name": "front",
   "version": "0.1.0",
+  "type":"module",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,9 +12,12 @@
   "dependencies": {
     "@devup-ui/react": "^1",
     "next": "15.3.4",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.1.0",
+    "axios": "^1.10.0",
+    "react-dom": "^19.1.0",
     "sanitize.css": "^13.0.0",
+    "motion": "12.19.2",
+    "qrcode.react": "^4.2.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
