@@ -2,14 +2,15 @@
 'use client'
 
 import { Box, Flex, Text } from '@devup-ui/react'
+
 import Navbar from '../../components/navbar'
 import Topbar from '../../components/topbar'
-import { PatrolContent } from './PatrolContent'
 import { CreatePatrol } from './CreatePatrol'
+import { PatrolContent } from './PatrolContent'
 
 export default function DispatchPage() {
   return (
-    <Box w="1440px" h="1024px" bg="#F7F7F7">
+    <Box bg="#F7F7F7" h="1024px" w="1440px">
       <Flex h="100%">
         {/* 좌측 네비바 */}
         <Navbar />

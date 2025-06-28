@@ -20,7 +20,15 @@ export default function Topbar() {
         >
           환영합니다! 김의성님
         </Text>
-        <Image alt="Logo" boxSize="64px" h="64px" src="/logo2.svg" />
+        <Box
+          display="flex"
+          flexShrink={0}
+          justifyContent="flex-end"
+          ml="32px"
+          mr="20px"
+        >
+          <Image alt="Logo" boxSize="64px" h="64px" src="/logo2.svg" />
+        </Box>
       </Flex>
     </Box>
   )

@@ -2,14 +2,19 @@
 'use client'
 export const runtime = 'nodejs'
 
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
 import { Box, Flex, Text } from '@devup-ui/react'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
 import Navbar from '../../../components/navbar'
 import Topbar from '../../../components/topbar'
 
-export default function GuardianDetailPage() {
+export default function GuardianDetailPage({
+  params: _params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id } = useParams()
   const router = useRouter()
 
@@ -23,18 +28,18 @@ export default function GuardianDetailPage() {
 
   const handleSave = () => {
     // TODO: API 호출하여 저장
-    console.log(`Saving guardian ${id}: ${name}`)
+    console.info(`Saving guardian ${id}: ${name}`)
     router.back()
   }
 
   const handleDelete = () => {
     // TODO: API 호출하여 삭제
-    console.log(`Deleting guardian ${id}`)
+    console.info(`Deleting guardian ${id}`)
     router.back()
   }
 
   return (
-    <Box w="1440px" h="1024px" bg="#F7F7F7">
+    <Box bg="#F7F7F7" h="1024px" w="1440px">
       <Flex h="100%">
         {/* 좌측 내비 */}
         <Navbar />
@@ -64,7 +69,7 @@ export default function GuardianDetailPage() {
               fontFamily="Pretendard"
               fontSize="32px"
               fontWeight="600"
-              mb="16px"
+              mb="26px"
             >
               가디언 상세 관리
             </Text>
@@ -110,8 +115,6 @@ export default function GuardianDetailPage() {
                 <tr style={{ borderBottom: '1px solid #DDD' }}>
                   <td style={{ padding: '12px 8px' }}>
                     <input
-                      type="text"
-                      value={name}
                       onChange={(e) => setName(e.target.value)}
                       style={{
                         width: '60%',
@@ -121,6 +124,8 @@ export default function GuardianDetailPage() {
                         border: '1px solid #CCC',
                         borderRadius: '4px',
                       }}
+                      type="text"
+                      value={name}
                     />
                     <button
                       onClick={handleSave}

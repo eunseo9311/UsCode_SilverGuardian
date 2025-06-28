@@ -1,15 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Box } from '@devup-ui/react'
+import { useEffect, useState } from 'react'
 
-export function VworldTable() {
+export function Table() {
   const [data, setData] = useState<Record<string, number>>({})
 
   // 1) vworld API 에서 실시간 데이터 가져오기
   useEffect(() => {
     fetch(
-      'https://uscode-silverguardian-api-627770884882.europe-west1.run.app/vworld'
+      'https://uscode-silverguardian-api-627770884882.europe-west1.run.app/vworld',
     )
       .then((res) => {
         if (!res.ok) throw new Error('네트워크 에러')
@@ -32,21 +32,20 @@ export function VworldTable() {
     padding: '8px 2px',
     textAlign: 'center',
     fontSize: '14px',
-    color: 'black',          // 전체 너비의 절반 정도(16.66% → 8.33%)
-    whiteSpace: 'nowrap',     // 텍스트 줄바꿈 방지
+    color: 'black', // 전체 너비의 절반 정도(16.66% → 8.33%)
+    whiteSpace: 'nowrap', // 텍스트 줄바꿈 방지
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   }
 
   return (
-    <Box mt="24px" px="30px" style={{ overflowX: 'auto' }}>
-      <table
-        style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          tableLayout: 'fixed',  // 고정 레이아웃 적용
-          color: 'black',
-        }}
+    <Box minW="700px" mt="24px" mx="auto" px="30px">
+      <Box
+        as="table"
+        borderCollapse="collapse"
+        color="black"
+        tableLayout="fixed"
+        w="100%"
       >
         <tbody>
           {rows.map((row, ri) => (
@@ -63,7 +62,7 @@ export function VworldTable() {
             </tr>
           ))}
         </tbody>
-      </table>
+      </Box>
     </Box>
   )
 }

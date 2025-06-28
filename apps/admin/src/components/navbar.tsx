@@ -17,16 +17,18 @@ export default function Navbar() {
   return (
     <Box
       alignItems="center"
-      bg="#F0F0F0" // 전체 바탕을 좀 밝은 그레이로
-      boxShadow="2px 0 4px rgba(0,0,0,0.1)"
+      bg="#F0F0F0"
       display="flex"
       flexDirection="column"
       h="100vh"
-      pt="40px"
-      w="250px"
+      justifyContent="center"
+      pb="0"
+      pt="0"
+      transform="translateY(-70px)"
+      w="260px"
     >
       {/* 로고 영역 */}
-      <Center mb="60px">
+      <Center mb="80px">
         <Text
           color="#4B8853"
           fontFamily="Pretendard"
@@ -43,7 +45,7 @@ export default function Navbar() {
       </Center>
 
       {/* 네비 메뉴 */}
-      <VStack padding="20px" w="100%">
+      <VStack gap="24px" padding="0" w="100%">
         {navItems.map(({ label, path }) => {
           const isActive = pathname === path
           return (
@@ -51,15 +53,16 @@ export default function Navbar() {
               <Center
                 _hover={{
                   cursor: 'pointer',
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                  background: '#E5E5E5',
                 }}
                 as="button"
-                bg={isActive ? '#D7D7D7' : '#FFFFFF'}
-                borderRadius="8px"
-                boxShadow={isActive ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'}
-                h="60px"
-                transition="box-shadow 0.2s"
-                w="90%"
+                bg={isActive ? '#D7D7D7' : '#F0F0F0'}
+                borderBottom="1px solid #E0E0E0"
+                borderRadius="0"
+                boxShadow="none"
+                h="80px"
+                transition="background 0.2s"
+                w="100%"
               >
                 <Text
                   color="#000"
