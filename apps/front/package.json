@@ -1,7 +1,7 @@
 {
   "name": "front",
   "version": "0.1.0",
-  "type":"module",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -13,8 +13,6 @@
     "@devup-ui/react": "^1",
     "next": "15.3.4",
     "react": "^19.1.0",
-    "axios": "^1.10.0",
-    "react-dom": "^19.1.0",
     "sanitize.css": "^13.0.0",
     "motion": "12.19.2",
     "qrcode.react": "^4.2.0",
@@ -26,7 +24,6 @@
     "@tauri-apps/cli": "^2.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
-    "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "eslint-plugin-devup": "^2.0.5",
