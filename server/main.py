@@ -10,6 +10,8 @@ from sqlalchemy.sql.expression import select
 from db import User, Patrol, PatrolUser, engine
 from sqlalchemy.orm import sessionmaker
 
+from ai import region_state
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -59,17 +61,17 @@ class PatrolSchema(BaseModel):
     end_time: Optional[datetime] = None  # 순찰 종료 시간
     memo: Optional[str] = None  # 메모
     active: bool = True  # 순찰 중인지 여부
-    users: list[PatrolUserSchema]  # 참여 유저들
-
-
-users = {}
-patrols = {}  # 순찰 데이터 저장
-patrol_counter = 1  # 순찰 ID 자동 생성용
+    users: List[PatrolUserSchema]  # 참여 유저들
 
 
 @app.get("/")
 def read_root() -> dict:
     return {"message": "Hello from uscode-silverguardian!"}
+
+
+@app.get("/vworld")
+async def vworld() -> dict:
+    return {"message": await region_state()}
 
 
 # User CRUD 기능
