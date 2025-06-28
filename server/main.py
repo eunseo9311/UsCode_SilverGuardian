@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic.config import ConfigDict
 from sqlalchemy.orm.session import Session
@@ -23,8 +24,19 @@ def get_db():
         db.close()
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Silver Guardian API",
+    description="산불 감시 및 순찰 관리 시스템",
+    version="1.0.0",
+)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class UserSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -61,7 +73,7 @@ class PatrolSchema(BaseModel):
     end_time: Optional[datetime] = None  # 순찰 종료 시간
     memo: Optional[str] = None  # 메모
     active: bool = True  # 순찰 중인지 여부
-    users: List[PatrolUserSchema]  # 참여 유저들
+    users: list[PatrolUserSchema]  # 참여 유저들
 
 
 @app.get("/")
@@ -72,6 +84,7 @@ def read_root() -> dict:
 @app.get("/vworld")
 async def vworld() -> dict:
     return {"message": await region_state()}
+
 
 
 # User CRUD 기능
