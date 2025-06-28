@@ -1,13 +1,14 @@
 'use client'
 
-import { Button } from '@devup-ui/react'
+import { Button, Text } from '@devup-ui/react'
 import { useRouter } from 'next/navigation'
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useState } from 'react'
 
 import { setUser } from '@/constants'
 import { getUUID } from '@/utils/get-uuid'
 
 export function StartButton() {
+  const [error, setError] = useState(false)
   const router = useRouter()
   useLayoutEffect(() => {
     if (localStorage.getItem('isAuth') === 'true') {
@@ -21,7 +22,7 @@ export function StartButton() {
     )
       .then((e) => {
         if (e.status === 404) {
-          alert('인증이 된 유저가 아닙니다.')
+          setError(true)
           throw new Error('인증이 된 유저가 아닙니다.')
         }
         return e.json()
@@ -36,7 +37,7 @@ export function StartButton() {
   return (
     <Button
       _hover={{ bg: '#45A049' }}
-      bg="#4CAF50"
+      bg={error ? '#FF0000' : '#4CAF50'}
       border="none"
       borderRadius="12px"
       color="white"
@@ -48,7 +49,7 @@ export function StartButton() {
       py="16px"
       w="100%"
     >
-      시작하기
+      시작하기 {error && <Text color="red">인증이 된 유저가 아닙니다.</Text>}
     </Button>
   )
 }
