@@ -1,3 +1,4 @@
+// components/topbar.tsx
 'use client'
 
 import { Box, Flex, Text, Image } from '@devup-ui/react'
@@ -5,7 +6,10 @@ import { Box, Flex, Text, Image } from '@devup-ui/react'
 export default function Topbar() {
   return (
     <Box w="100%" h="100px" bg="#6F6F6F">
-      <Flex alignItems="center" gap="50px" h="100%" px="24px">
+      <Flex alignItems="center" h="100%" px="24px">
+        {/* 빈 공간으로 밀어내기 */}
+        <Box flex={1} />
+
         <Text
           color="#FFF"
           fontFamily="Pretendard"
