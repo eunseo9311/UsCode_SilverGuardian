@@ -1,14 +1,15 @@
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from fastapi.middleware.cors import CORSMiddleware
+
 
 from pydantic.config import ConfigDict
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import select
 
-from db import User, Patrol, PatrolUser, engine
+from db import User, Patrol, PatrolUser, Notice, NoticeUser, engine
 from sqlalchemy.orm import sessionmaker
 
 from ai import region_state
@@ -58,7 +59,8 @@ class PatrolCreateSchema(BaseModel):
     name: str
     start_lat: float  # 순찰 시작 위도
     start_lon: float  # 순찰 시작 경도
-    users: list[str]  # 유저 ID 리스트
+    start_time: Optional[datetime] = None  # 순찰 시작 시간 (None이면 현재 시간)
+    users: List[str]  # 유저 ID 리스트
 
 
 class PatrolSchema(BaseModel):
@@ -74,7 +76,60 @@ class PatrolSchema(BaseModel):
     end_time: Optional[datetime] = None  # 순찰 종료 시간
     memo: Optional[str] = None  # 메모
     active: bool = True  # 순찰 중인지 여부
-    users: list[PatrolUserSchema]  # 참여 유저들
+    users: List[PatrolUserSchema]  # 참여 유저들
+
+
+class NoticeUserSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    user_id: str
+    confirmed: bool = False
+
+
+class NoticeCreateSchema(BaseModel):
+    title: str
+    content: str
+    location: str
+    location_lat: float
+    location_lon: float
+    scheduled_time: datetime
+    users: List[str]  # 유저 ID 리스트
+
+
+class NoticeSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    content: str
+    location: str
+    location_lat: float
+    location_lon: float
+    scheduled_time: datetime
+    active: bool = True
+    assigned_users: List[NoticeUserSchema]  # 할당된 유저들
+
+
+class NoticeSimpleSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    location: str
+    location_lat: float
+    location_lon: float
+    scheduled_time: datetime
+    user_names: List[str]  # 참여 유저들 이름만
+
+
+class PatrolNoticeSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    start_lat: float  # 순찰 시작 위치 위도
+    start_lon: float  # 순찰 시작 위치 경도
+    start_time: datetime  # 순찰 시작 시간
+    user_names: List[str]  # 함께 순찰하는 유저들 이름
 
 
 @app.get("/")
@@ -183,7 +238,7 @@ def start_patrol(
         name=patrol_data.name,
         start_lat=patrol_data.start_lat,
         start_lon=patrol_data.start_lon,
-        start_time=datetime.now(),
+        start_time=patrol_data.start_time or datetime.now(),
         active=True,
     )
     db.add(patrol)
@@ -497,3 +552,395 @@ def get_patrol_users(
     )
 
     return [PatrolUserSchema(user_id=pu.user_id) for pu in patrol_users]
+
+
+# Notice CRUD 기능
+
+
+# 공지 생성 Create
+@app.post("/notices/start")
+def start_notice(
+    notice_data: NoticeCreateSchema, db: Session = Depends(get_db)
+) -> NoticeSchema:
+    # 1. 유저들 존재 확인
+    for user_info in notice_data.users:
+        user = db.execute(select(User).where(User.id == user_info)).scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User {user_info} not found")
+
+    # 2. 공지 생성
+    notice = Notice(
+        title=notice_data.title,
+        content=notice_data.content,
+        location=notice_data.location,
+        location_lat=notice_data.location_lat,
+        location_lon=notice_data.location_lon,
+        scheduled_time=notice_data.scheduled_time,
+        active=True,
+    )
+    db.add(notice)
+    db.flush()  # ID 생성
+
+    # 3. 유저들 할당
+    for user_info in notice_data.users:
+        notice_user = NoticeUser(
+            notice_id=notice.id,
+            user_id=user_info,
+            confirmed=False,
+        )
+        db.add(notice_user)
+
+    db.commit()
+    db.refresh(notice)
+
+    # 4. 응답 데이터 구성
+    assigned_users = (
+        db.execute(select(NoticeUser).where(NoticeUser.notice_id == notice.id))
+        .scalars()
+        .all()
+    )
+
+    users_data = [
+        NoticeUserSchema(user_id=nu.user_id, confirmed=nu.confirmed)
+        for nu in assigned_users
+    ]
+
+    return NoticeSchema(
+        id=notice.id,
+        title=notice.title,
+        content=notice.content,
+        location=notice.location,
+        location_lat=notice.location_lat,
+        location_lon=notice.location_lon,
+        scheduled_time=notice.scheduled_time,
+        active=notice.active,
+        assigned_users=users_data,
+    )
+
+
+# 공지 조회 Read
+@app.get("/notices")
+def read_notices(db: Session = Depends(get_db)) -> list[NoticeSchema]:
+    notices = db.execute(select(Notice)).scalars().all()
+    result = []
+
+    for notice in notices:
+        # 각 공지의 유저 정보 조회
+        assigned_users = (
+            db.execute(select(NoticeUser).where(NoticeUser.notice_id == notice.id))
+            .scalars()
+            .all()
+        )
+
+        users_data = [
+            NoticeUserSchema(user_id=nu.user_id, confirmed=nu.confirmed)
+            for nu in assigned_users
+        ]
+
+        result.append(
+            NoticeSchema(
+                id=notice.id,
+                title=notice.title,
+                content=notice.content,
+                location=notice.location,
+                location_lat=notice.location_lat,
+                location_lon=notice.location_lon,
+                scheduled_time=notice.scheduled_time,
+                active=notice.active,
+                assigned_users=users_data,
+            )
+        )
+
+    return result
+
+
+# 특정 공지 조회 Read
+@app.get("/notices/{notice_id}")
+def read_notice(notice_id: int, db: Session = Depends(get_db)) -> NoticeSchema:
+    notice = db.execute(
+        select(Notice).where(Notice.id == notice_id)
+    ).scalar_one_or_none()
+    if not notice:
+        raise HTTPException(status_code=404, detail="Notice not found")
+
+    # 공지의 유저 정보 조회
+    assigned_users = (
+        db.execute(select(NoticeUser).where(NoticeUser.notice_id == notice.id))
+        .scalars()
+        .all()
+    )
+
+    users_data = [
+        NoticeUserSchema(user_id=nu.user_id, confirmed=nu.confirmed)
+        for nu in assigned_users
+    ]
+
+    return NoticeSchema(
+        id=notice.id,
+        title=notice.title,
+        content=notice.content,
+        location=notice.location,
+        location_lat=notice.location_lat,
+        location_lon=notice.location_lon,
+        scheduled_time=notice.scheduled_time,
+        active=notice.active,
+        assigned_users=users_data,
+    )
+
+
+# 공지 종료 Update
+@app.put("/notices/{notice_id}/end")
+def end_notice(notice_id: int, db: Session = Depends(get_db)) -> NoticeSchema:
+    notice = db.execute(
+        select(Notice).where(Notice.id == notice_id)
+    ).scalar_one_or_none()
+    if not notice:
+        raise HTTPException(status_code=404, detail="Notice not found")
+
+    notice.active = False
+
+    db.commit()
+    db.refresh(notice)
+
+    # 업데이트된 공지 정보 반환
+    return read_notice(notice_id, db)
+
+
+# 공지 메모 업데이트 Update
+@app.put("/notices/{notice_id}/memo")
+def update_notice_memo(
+    notice_id: int, memo: str, db: Session = Depends(get_db)
+) -> NoticeSchema:
+    notice = db.execute(
+        select(Notice).where(Notice.id == notice_id)
+    ).scalar_one_or_none()
+    if not notice:
+        raise HTTPException(status_code=404, detail="Notice not found")
+    notice.memo = memo
+
+    db.commit()
+    db.refresh(notice)
+
+    # 업데이트된 공지 정보 반환
+    return read_notice(notice_id, db)
+
+
+# 특정 유저의 활성 공지 조회
+@app.get("/notices/user/{user_id}/active")
+def get_user_active_notice(user_id: str, db: Session = Depends(get_db)) -> NoticeSchema:
+    # 유저가 할당된 활성 공지 조회
+    notice_user = db.execute(
+        select(NoticeUser)
+        .join(Notice)
+        .where(NoticeUser.user_id == user_id, Notice.active)
+    ).scalar_one_or_none()
+
+    if not notice_user:
+        raise HTTPException(status_code=404, detail="User not in active notice")
+
+    # 공지 정보 반환
+    return read_notice(notice_user.notice_id, db)
+
+
+# 특정 유저의 간단한 공지 조회 (순찰 시간 이전까지)
+@app.get("/notices/user/{user_id}/simple")
+def get_user_simple_notice(
+    user_id: str, db: Session = Depends(get_db)
+) -> NoticeSimpleSchema:
+    # 유저가 할당된 활성 공지 조회 (순찰 시간 이전까지만)
+    current_time = datetime.now()
+
+    notice_user = db.execute(
+        select(NoticeUser)
+        .join(Notice)
+        .where(
+            NoticeUser.user_id == user_id,
+            Notice.active,
+            Notice.scheduled_time > current_time,  # 순찰 시간 이전까지만
+        )
+    ).scalar_one_or_none()
+
+    if not notice_user:
+        raise HTTPException(status_code=404, detail="No active notice found for user")
+
+    notice = notice_user.notice
+
+    # 참여 유저들의 이름 조회
+    assigned_users = (
+        db.execute(
+            select(NoticeUser).join(User).where(NoticeUser.notice_id == notice.id)
+        )
+        .scalars()
+        .all()
+    )
+
+    user_names = [nu.user.name for nu in assigned_users]
+
+    return NoticeSimpleSchema(
+        id=notice.id,
+        location=notice.location,
+        location_lat=notice.location_lat,
+        location_lon=notice.location_lon,
+        scheduled_time=notice.scheduled_time,
+        user_names=user_names,
+    )
+
+
+# 공지 삭제 Delete
+@app.delete("/notices/{notice_id}")
+def delete_notice(notice_id: int, db: Session = Depends(get_db)) -> NoticeSchema:
+    notice = db.execute(
+        select(Notice).where(Notice.id == notice_id)
+    ).scalar_one_or_none()
+    if not notice:
+        raise HTTPException(status_code=404, detail="Notice not found")
+
+    # 삭제 전에 공지 정보 저장
+    deleted_notice = NoticeSchema(
+        id=notice.id,
+        title=notice.title,
+        content=notice.content,
+        location=notice.location,
+        location_lat=notice.location_lat,
+        location_lon=notice.location_lon,
+        scheduled_time=notice.scheduled_time,
+        active=notice.active,
+        assigned_users=[],  # 삭제되었으므로 빈 리스트
+    )
+
+    # 공지 삭제 시 관련된 NoticeUser도 함께 삭제됨 (CASCADE)
+    db.delete(notice)
+    db.commit()
+
+    return deleted_notice
+
+
+# 공지에 유저 추가
+@app.post("/notices/{notice_id}/users")
+def add_user_to_notice(
+    notice_id: int, user_id: str, db: Session = Depends(get_db)
+) -> NoticeSchema:
+    # 공지 존재 확인
+    notice = db.execute(
+        select(Notice).where(Notice.id == notice_id)
+    ).scalar_one_or_none()
+    if not notice:
+        raise HTTPException(status_code=404, detail="Notice not found")
+
+    # 유저 존재 확인
+    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 이미 할당된지 확인
+    existing = db.execute(
+        select(NoticeUser).where(
+            NoticeUser.notice_id == notice_id, NoticeUser.user_id == user_id
+        )
+    ).scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=400, detail="User already assigned to notice")
+
+    # 유저 추가
+    notice_user = NoticeUser(notice_id=notice_id, user_id=user_id, confirmed=False)
+    db.add(notice_user)
+    db.commit()
+
+    # 업데이트된 공지 정보 반환
+    return read_notice(notice_id, db)
+
+
+# 공지에서 유저 제거
+@app.delete("/notices/{notice_id}/users/{user_id}")
+def remove_user_from_notice(
+    notice_id: int, user_id: str, db: Session = Depends(get_db)
+) -> NoticeSchema:
+    notice_user = db.execute(
+        select(NoticeUser).where(
+            NoticeUser.notice_id == notice_id, NoticeUser.user_id == user_id
+        )
+    ).scalar_one_or_none()
+
+    if not notice_user:
+        raise HTTPException(status_code=404, detail="User not assigned to notice")
+
+    db.delete(notice_user)
+    db.commit()
+
+    # 업데이트된 공지 정보 반환
+    return read_notice(notice_id, db)
+
+
+# 공지의 유저 목록 조회
+@app.get("/notices/{notice_id}/users")
+def get_notice_users(
+    notice_id: int, db: Session = Depends(get_db)
+) -> list[NoticeUserSchema]:
+    # 공지 존재 확인
+    notice = db.execute(
+        select(Notice).where(Notice.id == notice_id)
+    ).scalar_one_or_none()
+    if not notice:
+        raise HTTPException(status_code=404, detail="Notice not found")
+
+    # 공지의 유저들 조회
+    assigned_users = (
+        db.execute(select(NoticeUser).where(NoticeUser.notice_id == notice_id))
+        .scalars()
+        .all()
+    )
+
+    return [
+        NoticeUserSchema(user_id=nu.user_id, confirmed=nu.confirmed)
+        for nu in assigned_users
+    ]
+
+
+# 특정 유저의 가장 가까운 미래 순찰 조회 (공지용)
+@app.get("/patrols/user/{user_id}/next")
+def get_user_next_patrol(
+    user_id: str, db: Session = Depends(get_db)
+) -> PatrolNoticeSchema:
+    # 유저 존재 확인
+    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    current_time = datetime.now()
+
+    # 유저가 참여하는 가장 가까운 미래 순찰 조회
+    next_patrol_user = db.execute(
+        select(PatrolUser)
+        .join(Patrol)
+        .where(
+            PatrolUser.user_id == user_id,
+            Patrol.start_time > current_time,  # 미래 순찰만
+            Patrol.active,  # 활성 순찰만
+        )
+        .order_by(Patrol.start_time.asc())  # 가장 가까운 순서로 정렬
+    ).scalar_one_or_none()
+
+    if not next_patrol_user:
+        raise HTTPException(status_code=404, detail="No future patrol found for user")
+
+    patrol = next_patrol_user.patrol
+
+    # 함께 순찰하는 유저들의 이름 조회
+    patrol_users = (
+        db.execute(
+            select(PatrolUser).join(User).where(PatrolUser.patrol_id == patrol.id)
+        )
+        .scalars()
+        .all()
+    )
+
+    user_names = [pu.user.name for pu in patrol_users]
+
+    return PatrolNoticeSchema(
+        id=patrol.id,
+        name=patrol.name,
+        start_lat=patrol.start_lat,
+        start_lon=patrol.start_lon,
+        start_time=patrol.start_time,
+        user_names=user_names,
+    )
